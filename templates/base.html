@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --sidebar-width: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', 'Noto Sans Arabic', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--glass-border);
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            z-index: 1000;
+        }
+        .sidebar-logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 3rem; text-align: center; text-decoration: none; }
+        .sidebar-nav { list-style: none; flex-grow: 1; }
+        .sidebar-nav li { margin-bottom: 0.5rem; }
+        .sidebar-nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            transition: 0.3s;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        
+        .main-content {
+            margin-right: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: none; font-weight: 600; cursor: pointer; transition: 0.3s;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        .input-group { margin-bottom: 1.5rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%; padding: 0.85rem 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border);
+            border-radius: 0.75rem; color: white; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+        th { text-align: right; color: #94a3b8; padding: 1rem; border-bottom: 1px solid var(--glass-border); }
+        td { padding: 1.25rem 1rem; border-bottom: 1px solid var(--glass-border); }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.8rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+
+        .alert { padding: 1rem; border-radius: 0.75rem; margin-bottom: 2rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        /* Fix for linting error */
+        .no-sidebar { margin-right: 0 !important; width: 100% !important; }
+    </style>
+</head>
+<body>
+    {% if session.logged_in %}
+    <aside class="sidebar">
+        <a href="/" class="sidebar-logo">TeleDoc Admin</a>
+        <ul class="sidebar-nav">
+            <li><a href="/categories" id="nav-cats">🗂️ إدارة الفئات</a></li>
+            <li><a href="/items" id="nav-items">📦 إدارة الأصناف</a></li>
+            <li><a href="/documents" id="nav-docs">📄 إدارة الأوراق</a></li>
+        </ul>
+        <div style="margin-top: auto;">
+            <a href="/logout" style="color: #ef4444; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">🚪 خروج</a>
+        </div>
+    </aside>
+    {% endif %}
+
+    <main class="main-content {% if not session.logged_in %}no-sidebar{% endif %}">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

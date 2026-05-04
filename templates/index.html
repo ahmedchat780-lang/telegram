@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأصناف | الآدمين{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem;">إضافة صنف جديد ➕</h2>
+    <form action="/add" method="post" enctype="multipart/form-data" id="itemForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="input-group">
+                <label>اسم الصنف</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="input-group">
+                <label>الوصف</label>
+                <input type="text" name="description">
+            </div>
+            <div class="input-group">
+                <label>السعر</label>
+                <input type="text" name="price" placeholder="مثلاً: 500 ج.م">
+            </div>
+            <div class="input-group">
+                <label>الخصم (اختياري)</label>
+                <input type="text" name="discount" placeholder="مثلاً: 10%">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+            <div class="input-group">
+                <label>الصور (يمكنك اختيار أكثر من صورة)</label>
+                <input type="file" name="images" multiple accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>الفيديوهات (يمكنك اختيار أكثر من فيديو)</label>
+                <input type="file" name="videos" multiple accept="video/*">
+            </div>
+            <div class="input-group">
+                <label>ملف PDF</label>
+                <input type="file" name="pdf" accept=".pdf">
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 1.5rem;">
+            <label>المواصفات (Specs)</label>
+            <div id="specsContainer">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="text" placeholder="المفتاح (مثلاً: اللون)" class="spec-key">
+                    <input type="text" placeholder="القيمة (مثلاً: أحمر)" class="spec-value">
+                </div>
+            </div>
+            <button type="button" class="btn" style="background: rgba(255,255,255,0.1); font-size: 0.8rem;" onclick="addSpecRow()">+ إضافة مواصفة أخرى</button>
+            <input type="hidden" name="specs" id="specsInput">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 2rem; width: 100%;" onclick="prepareSpecs()">حفظ الصنف بالكامل</button>
+    </form>
+</div>
+
+<div class="glass-card">
+    <h2 style="margin-bottom: 1.5rem;">الأصناف المسجلة 📋</h2>
+    {% if items %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>السعر</th>
+                    <th>الصور/الفيديو</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td>{{ item.price or '-' }}</td>
+                    <td>
+                        <span class="badge">{{ item.images|length }} صور</span>
+                        <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">{{ item.videos|length }} فيديو</span>
+                    </td>
+                    <td>
+                        <a href="/delete/{{ item.id }}" class="btn btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('حذف؟')">حذف</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--text-muted);">لا توجد أصناف.</p>
+    {% endif %}
+</div>
+
+<script>
+    function addSpecRow() {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.gap = '0.5rem';
+        div.style.marginBottom = '0.5rem';
+        div.innerHTML = `
+            <input type="text" placeholder="المفتاح" class="spec-key">
+            <input type="text" placeholder="القيمة" class="spec-value">
+        `;
+        document.getElementById('specsContainer').appendChild(div);
+    }
+
+    function prepareSpecs() {
+        const keys = document.querySelectorAll('.spec-key');
+        const values = document.querySelectorAll('.spec-value');
+        const specs = {};
+        keys.forEach((key, i) => {
+            if (key.value.strip !== '') {
+                specs[key.value] = values[i].value;
+            }
+        });
+        document.getElementById('specsInput').value = JSON.stringify(specs);
+    }
+</script>
+{% endblock %}

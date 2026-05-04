@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Admin{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <!-- Sidebar: Categories -->
+    <div>
+        <div class="glass-card">
+            <h3>الأقسام 📂</h3>
+            <form action="/categories/add" method="post" style="margin-top: 1rem;">
+                <input type="text" name="name" placeholder="اسم القسم الجديد..." required>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">إضافة قسم</button>
+            </form>
+            <ul style="list-style: none; margin-top: 1.5rem;">
+                {% for cat in categories %}
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                    <span>{{ cat.name }}</span>
+                    <a href="/categories/delete/{{ cat.id }}" style="color: var(--danger); font-size: 0.8rem;" onclick="return confirm('حذف القسم؟')">حذف</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main: Items -->
+    <div>
+        <div class="glass-card">
+            <h3>إضافة صنف جديد ✨</h3>
+            <form action="/items/add" method="post" enctype="multipart/form-data" style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label>الاسم</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div>
+                    <label>القسم</label>
+                    <select name="category_id" required>
+                        <option value="">اختر القسم...</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>الوصف</label>
+                    <textarea name="description" rows="2"></textarea>
+                </div>
+                <div>
+                    <label>كلمات مفتاحية (فاصلة بينها)</label>
+                    <input type="text" name="keywords" placeholder="عقد, سجل, تجاري">
+                </div>
+                <div>
+                    <label>الملف (صورة أو PDF)</label>
+                    <input type="file" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary" style="grid-column: span 2; margin-top: 0.5rem;">حفظ الصنف</button>
+            </form>
+        </div>
+
+        <div class="glass-card">
+            <h3>الأصناف الحالية 📋</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>القسم</th>
+                        <th>الملف</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td><span class="badge">{{ cat_map.get(item.category_id, 'Unknown') }}</span></td>
+                        <td>
+                            {% if item.file_url %}
+                            <a href="{{ item.file_url }}" target="_blank" style="color: var(--primary); font-size: 0.8rem;">معاينة</a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="/items/edit/{{ item.id }}" class="btn" style="padding: 0.3rem 0.6rem; background: rgba(255,255,255,0.05);">تعديل</a>
+                                <a href="/items/delete/{{ item.id }}" class="btn btn-danger" style="padding: 0.3rem 0.6rem;" onclick="return confirm('حذف الصنف؟')">حذف</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

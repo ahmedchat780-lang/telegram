@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Item{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="glass-card">
+        <h3>تعديل بيانات الصنف ✏️</h3>
+        <form action="/items/edit/{{ item.id }}" method="post" style="margin-top: 1.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <label>الاسم</label>
+                <input type="text" name="name" value="{{ item.name }}" required>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>القسم</label>
+                <select name="category_id" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id == item.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>الوصف</label>
+                <textarea name="description" rows="3">{{ item.description }}</textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>كلمات مفتاحية</label>
+                <input type="text" name="keywords" value="{{ item.keywords|join(', ') }}">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                <a href="/" class="btn" style="background: rgba(255,255,255,0.05); color: var(--text);">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

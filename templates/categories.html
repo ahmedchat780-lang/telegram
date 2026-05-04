@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الفئات{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem;">إضافة فئة جديدة 🗂️</h2>
+    <form action="/categories/add" method="post">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="input-group">
+                <label>اسم الفئة (مثل: هواتف)</label>
+                <input type="text" name="name" required placeholder="ادخل اسم الفئة...">
+            </div>
+            <div class="input-group">
+                <label>كلمات مفتاحية (مفصولة بفاصلة)</label>
+                <input type="text" name="keywords" placeholder="موبايلات، جوالات، ايفون">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ الفئة</button>
+    </form>
+</div>
+
+<div class="glass-card">
+    <h2>الفئات المسجلة 📋</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>اسم الفئة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td><strong>{{ cat.name }}</strong></td>
+                <td>
+                    <a href="/categories/delete/{{ cat.id }}" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من الحذف؟ سيتم فصل الأصناف المرتبطة بهذه الفئة.')">حذف</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>document.getElementById('nav-cats').classList.add('active');</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل | {{ doc.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="glass-card">
+        <h2 style="margin-bottom: 2rem;">تعديل بيانات المستند ✏️</h2>
+        <form action="/edit/{{ doc.id }}" method="post">
+            <div class="input-group">
+                <label>اسم المستند</label>
+                <input type="text" name="name" value="{{ doc.name }}" required>
+            </div>
+            <div class="input-group">
+                <label>الكلمات المفتاحية</label>
+                <input type="text" name="keywords" value="{{ doc.keywords or '' }}">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                <a href="/" class="btn" style="background: rgba(255, 255, 255, 0.05); color: var(--text);">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

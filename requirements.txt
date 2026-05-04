@@ -1,0 +1,6 @@
+flask
+python-telegram-bot
+fuzzywuzzy
+python-Levenshtein
+python-dotenv
+gunicorn

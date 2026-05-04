@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأصناف{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem;">إضافة صنف جديد 📦</h2>
+    <form action="/items/add" method="post" enctype="multipart/form-data">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="input-group">
+                <label>اسم الصنف</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="input-group">
+                <label>الفئة</label>
+                <select name="category_id" required>
+                    <option value="">اختر الفئة...</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label>الوصف</label>
+                <input type="text" name="description">
+            </div>
+            <div class="input-group">
+                <label>السعر</label>
+                <input type="text" name="price">
+            </div>
+            <div class="input-group">
+                <label>كلمات مفتاحية</label>
+                <input type="text" name="keywords" placeholder="عقد، بيع، توثيق">
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+            <div class="input-group"><label>الصور</label><input type="file" name="images" multiple></div>
+            <div class="input-group"><label>الفيديوهات</label><input type="file" name="videos" multiple></div>
+            <div class="input-group"><label>ملف PDF</label><input type="file" name="pdf"></div>
+        </div>
+        <div class="input-group">
+            <label>المواصفات (JSON)</label>
+            <textarea name="specs" placeholder='{"اللون": "أحمر", "الوزن": "1كج"}' rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ المنتج</button>
+    </form>
+</div>
+
+<div class="glass-card">
+    <h2>الأصناف المسجلة 📋</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>الاسم</th>
+                <th>الفئة</th>
+                <th>السعر</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td><span class="badge">{{ item.category_name or 'بدون فئة' }}</span></td>
+                <td>{{ item.price or '-' }}</td>
+                <td><a href="/items/delete/{{ item.id }}" class="btn btn-danger" onclick="return confirm('حذف؟')">حذف</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>document.getElementById('nav-items').classList.add('active');</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأوراق{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem;">إضافة ورقة جديدة 📄</h2>
+    <form action="/documents/add" method="post" enctype="multipart/form-data">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="input-group"><label>اسم الورقة (مثل: بطاقة ضريبية)</label><input type="text" name="name" required></div>
+            <div class="input-group"><label>كلمات مفتاحية للبحث</label><input type="text" name="keywords" placeholder="سجل، تجاري، شركة"></div>
+        </div>
+        <div class="input-group"><label>الملف (PDF أو صورة)</label><input type="file" name="file" required></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">حفظ الورقة</button>
+    </form>
+</div>
+
+<div class="glass-card">
+    <h2>الأوراق المسجلة 📂</h2>
+    <table>
+        <thead><tr><th>اسم الورقة</th><th>الكلمات المفتاحية</th><th>الإجراءات</th></tr></thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td><strong>{{ doc.name }}</strong></td>
+                <td>{{ doc.keywords or '-' }}</td>
+                <td><a href="/documents/delete/{{ doc.id }}" class="btn btn-danger" onclick="return confirm('حذف؟')">حذف</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>document.getElementById('nav-docs').classList.add('active');</script>
+{% endblock %}
