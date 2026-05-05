@@ -25,6 +25,9 @@ def init_firebase():
             cred_json = os.getenv('FIREBASE_CONFIG')
             if cred_json:
                 cred_dict = json.loads(cred_json)
+                # إصلاح مشكلة الأسطر الجديدة في المفتاح الخاص (شائع في Railway)
+                if 'private_key' in cred_dict:
+                    cred_dict['private_key'] = cred_dict['private_key'].replace('\\n', '\n')
                 cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
             else:
