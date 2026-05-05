@@ -1,8 +1,14 @@
 import os
 import json
 import re
+import base64
+import logging
 import firebase_admin
 from firebase_admin import credentials, firestore
+
+# إعداد الـ Logging لمراقبة الاتصال في Railway
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 _db = None
 
@@ -10,30 +16,58 @@ def get_db():
     global _db
     if _db is None:
         if not firebase_admin._apps:
-            # محاولة التهيئة إذا لم تكن قد تمت
             init_firebase()
         _db = firestore.client()
     return _db
 
 def init_firebase():
-    cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase_key.json')
-    if os.path.exists(cred_path):
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-    else:
-        try:
-            cred_json = os.getenv('FIREBASE_CONFIG')
-            if cred_json:
-                cred_dict = json.loads(cred_json)
-                # إصلاح مشكلة الأسطر الجديدة في المفتاح الخاص (شائع في Railway)
-                if 'private_key' in cred_dict:
-                    cred_dict['private_key'] = cred_dict['private_key'].replace('\\n', '\n')
-                cred = credentials.Certificate(cred_dict)
-                firebase_admin.initialize_app(cred)
-            else:
-                raise Exception("Firebase configuration (FIREBASE_CONFIG) is missing!")
-        except Exception as e:
-            raise e
+    """
+    تهيئة Firebase باستخدام أفضل الممارسات لبيئات الـ Cloud.
+    الأولوية: Base64 -> JSON Env -> Local File
+    """
+    cred = None
+    
+    try:
+        # 1. الأولوية الأولى: Base64 (الحل الأضمن)
+        base64_config = os.getenv('FIREBASE_CONFIG_BASE64')
+        if base64_config:
+            logger.info("Attempting to initialize Firebase using Base64 config...")
+            decoded_config = base64.b64decode(base64_config).decode('utf-8')
+            cred_dict = json.loads(decoded_config)
+            cred = _create_credential_from_dict(cred_dict)
+
+        # 2. الأولوية الثانية: JSON Raw Env
+        if not cred:
+            raw_json_config = os.getenv('FIREBASE_CONFIG')
+            if raw_json_config:
+                logger.info("Attempting to initialize Firebase using JSON Raw config...")
+                cred_dict = json.loads(raw_json_config)
+                cred = _create_credential_from_dict(cred_dict)
+
+        # 3. الأولوية الثالثة: ملف محلي (للتطوير المحلي فقط)
+        if not cred:
+            cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase_key.json')
+            if os.path.exists(cred_path):
+                logger.info("Attempting to initialize Firebase using local firebase_key.json...")
+                cred = credentials.Certificate(cred_path)
+
+        if cred:
+            firebase_admin.initialize_app(cred)
+            logger.info("✅ Firebase initialized successfully.")
+        else:
+            logger.error("❌ Failed to find Firebase credentials in any source!")
+            raise Exception("No Firebase credentials found!")
+
+    except Exception as e:
+        logger.error(f"💥 Critical error initializing Firebase: {str(e)}")
+        raise e
+
+def _create_credential_from_dict(cred_dict):
+    """مساعد لإصلاح الـ private_key وإنشاء الـ Certificate"""
+    if 'private_key' in cred_dict:
+        # إصلاح مشكلة الـ newline التي تسبب Invalid JWT Signature
+        cred_dict['private_key'] = cred_dict['private_key'].replace('\\n', '\n')
+    return credentials.Certificate(cred_dict)
 
 def init_db():
     pass
