@@ -2,7 +2,9 @@ import sqlite3
 import os
 import json
 
-DB_PATH = 'database.db'
+# الحصول على المسار المطلق للمجلد الحالي لضمان عمل قاعدة البيانات من أي مكان يتم تشغيل البوت فيه
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'database.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
