@@ -69,7 +69,7 @@ def add_category_route():
         flash('تمت إضافة الفئة!')
     return redirect(url_for('categories_page'))
 
-@app.route('/categories/delete/<int:cat_id>')
+@app.route('/categories/delete/<cat_id>')
 def delete_category_route(cat_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
     delete_category(cat_id)
@@ -107,7 +107,29 @@ def add_item_route():
     flash('تمت إضافة المنتج!')
     return redirect(url_for('items_page'))
 
-@app.route('/items/delete/<int:item_id>')
+@app.route('/items/edit/<item_id>', methods=['GET', 'POST'])
+def edit_item_route(item_id):
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = request.form.get('price')
+        discount = request.form.get('discount')
+        category_id = request.form.get('category_id')
+        specs_raw = request.form.get('specs', '{}')
+        keywords = request.form.get('keywords')
+        try: specs = json.loads(specs_raw)
+        except: specs = {}
+        from database import update_item
+        update_item(item_id, name, description, price, discount, specs, category_id, keywords)
+        flash('تم تحديث المنتج!')
+        return redirect(url_for('items_page'))
+    
+    item = get_item_by_id(item_id)
+    categories = get_all_categories()
+    return render_template('edit_item.html', item=item, categories=categories)
+
+@app.route('/items/delete/<item_id>')
 def delete_item_route(item_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
     delete_item(item_id)
@@ -133,7 +155,7 @@ def add_document_route():
         flash('تمت إضافة الورقة!')
     return redirect(url_for('documents_page'))
 
-@app.route('/documents/delete/<int:doc_id>')
+@app.route('/documents/delete/<doc_id>')
 def delete_document_route(doc_id):
     if not session.get('logged_in'): return redirect(url_for('login'))
     delete_document(doc_id)

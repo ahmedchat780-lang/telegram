@@ -63,7 +63,10 @@
                 <td>{{ item.name }}</td>
                 <td><span class="badge">{{ item.category_name or 'بدون فئة' }}</span></td>
                 <td>{{ item.price or '-' }}</td>
-                <td><a href="/items/delete/{{ item.id }}" class="btn btn-danger" onclick="return confirm('حذف؟')">حذف</a></td>
+                <td>
+                    <a href="/items/edit/{{ item.id }}" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">تعديل</a>
+                    <a href="/items/delete/{{ item.id }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('حذف؟')">حذف</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

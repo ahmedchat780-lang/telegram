@@ -103,7 +103,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("اختر الفئة التابعة لها المنتجات:", reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif query.data.startswith('list_cat_'):
-        cat_id = int(query.data.split('_')[2])
+        cat_id = query.data.split('_')[2]
         items = get_items_by_category(cat_id)
         if not items:
             await query.edit_message_text("لا توجد منتجات في هذه الفئة حالياً.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 عودة للفئات", callback_data='menu_cats')]]))
@@ -122,12 +122,12 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await start(update, context)
 
     elif query.data.startswith('itm_'):
-        item_id = int(query.data.split('_')[1])
+        item_id = query.data.split('_')[1]
         item = get_item_by_id(item_id)
         if item: await send_item_details(update, context, item)
 
     elif query.data.startswith('doc_'):
-        doc_id = int(query.data.split('_')[1])
+        doc_id = query.data.split('_')[1]
         doc = get_document_by_id(doc_id)
         if doc: await send_document_file(update, context, doc)
 
