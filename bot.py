@@ -164,10 +164,25 @@ async def send_document_file(update, context, doc):
             else:
                 await context.bot.send_document(chat_id=chat_id, document=f, caption=f"📄 ورقة: {doc['name']}")
 
+async def test_db(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        from database import get_all_categories, get_all_items
+        cats = get_all_categories()
+        items = get_all_items()
+        text = f"✅ اتصال قاعدة البيانات سليم!\n\n"
+        text += f"📁 عدد الأقسام: {len(cats)}\n"
+        text += f"📦 عدد المنتجات: {len(items)}\n"
+        if len(items) > 0:
+            text += f"🔍 آخر منتج مضاف: {items[-1]['name']}"
+        await update.message.reply_text(text)
+    except Exception as e:
+        await update.message.reply_text(f"❌ خطأ في الاتصال بقاعدة البيانات:\n{str(e)}")
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('test', test_db))
     application.add_handler(CallbackQueryHandler(button_callback))
     application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    print("Bot is running with Categories and Items support...")
+    print("Bot is running...")
     application.run_polling()
