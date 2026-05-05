@@ -76,14 +76,16 @@ def delete_category_route(cat_id):
     flash('تم حذف الفئة')
     return redirect(url_for('categories_page'))
 
-# --- الأصناف (Items) ---
 @app.route('/')
 @app.route('/items')
 def items_page():
     if not session.get('logged_in'): return redirect(url_for('login'))
-    items = get_all_items()
-    categories = get_all_categories()
-    return render_template('items.html', items=items, categories=categories)
+    try:
+        items = get_all_items()
+        categories = get_all_categories()
+        return render_template('items.html', items=items, categories=categories)
+    except Exception as e:
+        return f"<h1>⚠️ خطأ في الاتصال:</h1><p>{str(e)}</p><p>تأكد من صحة متغير FIREBASE_CONFIG في Railway.</p>"
 
 @app.route('/items/add', methods=['POST'])
 def add_item_route():
