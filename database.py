@@ -4,16 +4,23 @@ import re
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# تهيئة Firebase
-# يحاول الكود البحث عن ملف firebase_key.json أو استخدام متغير بيئة
-cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase_key.json')
+_db = None
 
-if not firebase_admin._apps:
+def get_db():
+    global _db
+    if _db is None:
+        if not firebase_admin._apps:
+            # محاولة التهيئة إذا لم تكن قد تمت
+            init_firebase()
+        _db = firestore.client()
+    return _db
+
+def init_firebase():
+    cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase_key.json')
     if os.path.exists(cred_path):
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
     else:
-        # إذا لم يوجد الملف، يمكن استخدام متغير البيئة (مفيد لـ Railway)
         try:
             cred_json = os.getenv('FIREBASE_CONFIG')
             if cred_json:
@@ -21,14 +28,11 @@ if not firebase_admin._apps:
                 cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
             else:
-                print("Warning: Firebase configuration not found. Use FIREBASE_CONFIG env var or firebase_key.json")
+                raise Exception("Firebase configuration (FIREBASE_CONFIG) is missing!")
         except Exception as e:
-            print(f"Error initializing Firebase: {e}")
-
-db = firestore.client()
+            raise e
 
 def init_db():
-    # في Firestore لا نحتاج لإنشاء جداول مسبقاً
     pass
 
 def normalize_arabic(text):
@@ -41,25 +45,25 @@ def normalize_arabic(text):
 
 # --- عمليات الفئات (Categories) ---
 def add_category(name, keywords):
-    db.collection('categories').add({
+    get_db().collection('categories').add({
         'name': name,
         'keywords': keywords
     })
 
 def get_all_categories():
-    docs = db.collection('categories').stream()
+    docs = get_db().collection('categories').stream()
     return [{'id': doc.id, **doc.to_dict()} for doc in docs]
 
 def delete_category(cat_id):
-    db.collection('categories').document(cat_id).delete()
+    get_db().collection('categories').document(cat_id).delete()
     # تحديث الأصناف التي تتبع هذه الفئة
-    items = db.collection('items').where('category_id', '==', cat_id).stream()
+    items = get_db().collection('items').where('category_id', '==', cat_id).stream()
     for item in items:
-        db.collection('items').document(item.id).update({'category_id': None})
+        get_db().collection('items').document(item.id).update({'category_id': None})
 
 # --- عمليات الأصناف (Items) ---
 def add_item(name, description, images, videos, pdf, price, discount, specs, category_id, keywords):
-    db.collection('items').add({
+    get_db().collection('items').add({
         'name': name,
         'description': description,
         'images': images,  # ستبقى مسارات محلية بناءً على طلبك
@@ -73,7 +77,7 @@ def add_item(name, description, images, videos, pdf, price, discount, specs, cat
     })
 
 def get_all_items():
-    docs = db.collection('items').stream()
+    docs = get_db().collection('items').stream()
     items = []
     # نحتاج لجلب أسماء الفئات أيضاً
     categories = {c['id']: c['name'] for c in get_all_categories()}
@@ -90,7 +94,7 @@ def get_all_items():
     return items
 
 def get_items_by_category(category_id):
-    docs = db.collection('items').where('category_id', '==', category_id).stream()
+    docs = get_db().collection('items').where('category_id', '==', category_id).stream()
     items = []
     for doc in docs:
         data = doc.to_dict()
@@ -102,7 +106,7 @@ def get_items_by_category(category_id):
     return items
 
 def get_item_by_id(item_id):
-    doc = db.collection('items').document(item_id).get()
+    doc = get_db().collection('items').document(item_id).get()
     if doc.exists:
         data = doc.to_dict()
         item = {'id': doc.id, **data}
@@ -113,7 +117,7 @@ def get_item_by_id(item_id):
     return None
 
 def update_item(item_id, name, description, price, discount, specs, category_id, keywords):
-    db.collection('items').document(item_id).update({
+    get_db().collection('items').document(item_id).update({
         'name': name,
         'description': description,
         'price': price,
@@ -132,18 +136,18 @@ def delete_item(item_id):
             if os.path.exists(f):
                 try: os.remove(f)
                 except: pass
-        db.collection('items').document(item_id).delete()
+        get_db().collection('items').document(item_id).delete()
 
 # --- عمليات الأوراق ---
 def add_document(name, file_path, keywords):
-    db.collection('documents').add({
+    get_db().collection('documents').add({
         'name': name,
         'file_path': file_path,
         'keywords': keywords
     })
 
 def get_all_documents():
-    docs = db.collection('documents').stream()
+    docs = get_db().collection('documents').stream()
     return [{'id': doc.id, **doc.to_dict()} for doc in docs]
 
 def delete_document(doc_id):
@@ -152,10 +156,10 @@ def delete_document(doc_id):
         if os.path.exists(doc['file_path']):
             try: os.remove(doc['file_path'])
             except: pass
-        db.collection('documents').document(doc_id).delete()
+        get_db().collection('documents').document(doc_id).delete()
 
 def get_document_by_id(doc_id):
-    doc = db.collection('documents').document(doc_id).get()
+    doc = get_db().collection('documents').document(doc_id).get()
     if doc.exists:
         return {'id': doc.id, **doc.to_dict()}
     return None
